@@ -10,7 +10,7 @@ import { DollarSign } from "lucide-react";
 import { Loading } from '../components/Loading';
 import { Navbar } from '../components/Navbar';
 import { Package } from "lucide-react";
-import { Eye } from "lucide-react";
+import { Eye ,Plus} from "lucide-react";
 
 export const DonorDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');

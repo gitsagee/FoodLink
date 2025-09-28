@@ -7,6 +7,9 @@ import { Input } from "../components/Input";
 import { Select } from "../components/Select";
 import { Button } from "../components/Button";
 
+import { X } from "lucide-react";
+
+
 export const FundDonationModal = ({ isOpen, onClose }) => {
   const [donationData, setDonationData] = useState({
     amount: '', purpose: 'general', paymentMethod: 'upi'
