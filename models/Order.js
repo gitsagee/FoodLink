@@ -36,7 +36,7 @@ const orderSchema = new mongoose.Schema(
     },
     deliveryAddress: {
       type: String,
-      required: true,
+     
     },
     deliveryPartnerId: {
       type: String, // mock delivery boy ID

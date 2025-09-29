@@ -5,8 +5,8 @@ import connectDB from "./config/db.js";
 
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
-// import foodRoutes from "./routes/foodRoutes.js";
-
+import foodRoutes from "./routes/foodRoutes.js";
+import orderRoutes from "./routes/orderRoutes.js";
 dotenv.config();
 
 const app = express();
@@ -21,7 +21,8 @@ connectDB();
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
-// app.use("/api/foods", foodRoutes);
+app.use("/api/foods", foodRoutes);
+app.use("/api/orders",orderRoutes);
 
 // Default route
 app.get("/", (req, res) => {
