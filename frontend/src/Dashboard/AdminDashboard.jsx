@@ -366,7 +366,7 @@ const renderUsers = () => (
 
                             {/* Metadata */}
                             <div className="text-xs text-gray-500 space-y-1">
-                                <p>Donor: {food.donor.name}</p>
+                                {/* <p>Donor: {food.donor.name}</p> */}
                                 <p>Type: {food.type}</p>
                                 <p>Quantity: {food.quantity}</p>
                                 <p>Price: ₹{food.price}</p>

@@ -30,6 +30,7 @@ export const createFood = async (req, res) => {
 export const getFoods = async (req, res) => {
   try {
     const foods = await Food.find().populate("donor", "name email role");
+    
     res.json(foods);
   } catch (error) {
     res.status(500).json({ message: error.message });

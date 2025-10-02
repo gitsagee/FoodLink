@@ -204,7 +204,7 @@ export const NGODashboard = () => {
                 <p>Quantity: {food.quantity}</p>
                 <p>Price: ₹{food.price}</p>
                 <p>Expires: {new Date(food.expiryDate).toLocaleDateString()}</p>
-                <p>Donor: {food.donor.name}</p>
+                {/* <p>Donor: {food.donor.name}</p> */}
               </div>
               <Button
                 variant="secondary"
