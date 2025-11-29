@@ -3,6 +3,7 @@ import {
   createFood,
   getFoods,
   getFoodById,
+  getMyFoods,
   updateFood,
   deleteFood,
 } from "../controllers/foodController.js";
@@ -13,6 +14,7 @@ const router = express.Router();
 
 // Donor adds food
 router.post("/", protect, authorize("donor"), createFood);
+router.get("/my-foods", protect, authorize("donor"), getMyFoods);
 
 // Anyone can view list
 router.get("/", getFoods);

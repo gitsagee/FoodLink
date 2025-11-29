@@ -1,153 +1,133 @@
-
-
 import { useState, useEffect } from "react";
 import { useAuth } from "../auth/AuthProvider";
 import { useToast } from "../utils/ToastProvider";
 import { Card } from "../components/Card";
 import { Button } from "../components/Button";
-import { DollarSign } from "lucide-react";
-import { Loading } from '../components/Loading';
-import { Navbar } from '../components/Navbar';
-import { Users, Package, Bell } from "lucide-react";
+import { Loading } from "../components/Loading";
+import { Navbar } from "../components/Navbar";
+import { Users, Package, DollarSign, Trophy, Bell } from "lucide-react";
+
 export const AdminDashboard = () => {
-    const [activeTab, setActiveTab] = useState('overview');
+    const [activeTab, setActiveTab] = useState("overview");
     const [users, setUsers] = useState([]);
     const [foods, setFoods] = useState([]);
-    const [fundDonations, setFundDonations] = useState([]);
+    const [funds, setFunds] = useState([]);
     const [loading, setLoading] = useState(false);
+
     const { token, API_URL } = useAuth();
     const { showToast } = useToast();
 
-    useEffect(() => {
-        if (activeTab === 'users') {
-            fetchUsers();
-        } else if (activeTab === 'food-items') {
-            fetchAllFoods();
-        } else if (activeTab === 'fund-donations') {
-            fetchFundDonations();
-        }
-    }, [activeTab]);
+    // -----------------------
+    // FETCH FUNCTIONS
+    // -----------------------
 
     const fetchUsers = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`${API_URL}/users`, {
-                headers: { 'Authorization': `Bearer ${token}` }
+            const res = await fetch(`${API_URL}/users`, {
+                headers: { Authorization: `Bearer ${token}` },
             });
-            if (response.ok) {
-                const data = await response.json();
-                setUsers(data);
-            }
-        } catch (error) {
-            showToast('Failed to fetch users', 'error');
+            const data = await res.json();
+            setUsers(data);
+        } catch {
+            showToast("Failed to load users", "error");
         } finally {
             setLoading(false);
         }
     };
 
-    const fetchAllFoods = async () => {
+    const fetchFoods = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`${API_URL}/foods`, {
-                headers: { 'Authorization': `Bearer ${token}` }
+            const res = await fetch(`${API_URL}/foods`, {
+                headers: { Authorization: `Bearer ${token}` },
             });
-            if (response.ok) {
-                const data = await response.json();
-                // console.log(data);
-                setFoods(data);
-            }
-        } catch (error) {
-            showToast('Failed to fetch food items', 'error');
+            const data = await res.json();
+            setFoods(data);
+        } catch {
+            showToast("Failed to load foods", "error");
         } finally {
             setLoading(false);
         }
     };
 
-    const fetchFundDonations = async () => {
+    const fetchFunds = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`${API_URL}/funds`, {
-                headers: { 'Authorization': `Bearer ${token}` }
+            const res = await fetch(`${API_URL}/funds`, {
+                headers: { Authorization: `Bearer ${token}` },
             });
-            if (response.ok) {
-                const data = await response.json();
-                setFundDonations(data);
-            }
-        } catch (error) {
-            showToast('Failed to fetch fund donations', 'error');
+            const data = await res.json();
+            setFunds(data);
+        } catch {
+            showToast("Failed to load funds", "error");
         } finally {
             setLoading(false);
         }
     };
-const handleUserAction = async (userId, action) => {
-  try {
-    if (action === "delete") {
-      // Delete user
-      const response = await fetch(`${API_URL}/users/${userId}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
 
-      if (response.ok) {
-        const result = await response.json();
-        showToast(result.message || "User deleted successfully", "success");
-        fetchUsers();
-      } else {
-        const errorData = await response.json();
-        showToast(errorData.message || "Failed to delete user", "error");
-      }
-    } else if (action === "grant" || action === "revoke") {
-      // Toggle access
-      const response = await fetch(`${API_URL}/users/${userId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ access: action === "grant" }),
-      });
+    useEffect(() => {
+        if (activeTab === "users") fetchUsers();
+        if (activeTab === "food-items") fetchFoods();
+        if (activeTab === "fund-donations") fetchFunds();
+        if (activeTab === "leaderboard") {
+            fetchFoods();
+            fetchFunds();
+        }
+    }, [activeTab]);
 
-      if (response.ok) {
-        const updatedUser = await response.json();
-        showToast(
-          `Access ${updatedUser.access ? "granted" : "revoked"} successfully`,
-          "success"
-        );
-        fetchUsers();
-      } else {
-        const errorData = await response.json();
-        showToast(errorData.message || "Failed to update access", "error");
-      }
-    }
-  } catch (error) {
-    showToast("Network error", "error");
-  }
-};
+    // -----------------------
+    // ACTIONS
+    // -----------------------
 
-    const handleDeleteFood = async (foodId) => {
+    const handleUserAction = async (id, action) => {
         try {
-            const response = await fetch(`${API_URL}/foods/${foodId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-
-            if (response.ok) {
-                const result = await response.json();
-                showToast(result.message || 'Food deleted successfully', 'success');
-                fetchAllFoods(); // refresh after deletion
+            if (action === "delete") {
+                const res = await fetch(`${API_URL}/users/${id}`, {
+                    method: "DELETE",
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                const msg = await res.json();
+                showToast(msg.message, "success");
+                fetchUsers();
             } else {
-                const errorData = await response.json();
-                showToast(errorData.message || 'Failed to delete food', 'error');
+                const res = await fetch(`${API_URL}/users/${id}`, {
+                    method: "PUT",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ access: action === "grant" }),
+                });
+                const data = await res.json();
+                showToast(
+                    `Access ${data.access ? "granted" : "revoked"} successfully`,
+                    "success"
+                );
+                fetchUsers();
             }
-        } catch (error) {
-            showToast('Network error', 'error');
+        } catch {
+            showToast("Action failed", "error");
         }
     };
 
+    const handleDeleteFood = async (id) => {
+        try {
+            const res = await fetch(`${API_URL}/foods/${id}`, {
+                method: "DELETE",
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            const msg = await res.json();
+            showToast(msg.message, "success");
+            fetchFoods();
+        } catch {
+            showToast("Failed to delete food", "error");
+        }
+    };
+
+    // -----------------------
+    // RENDER FUNCTIONS
+    // -----------------------
 
     const renderOverview = () => (
         <div className="space-y-6">
@@ -156,332 +136,309 @@ const handleUserAction = async (userId, action) => {
                     <div className="flex items-center">
                         <Users className="h-8 w-8 text-green-500" />
                         <div className="ml-4">
-                            <p className="text-2xl font-bold text-gray-900">156</p>
-                            <p className="text-gray-600">Total Users</p>
+                            <p className="text-2xl font-bold">{users.length}</p>
+                            <p>Total Users</p>
                         </div>
                     </div>
                 </Card>
+
                 <Card>
                     <div className="flex items-center">
                         <Package className="h-8 w-8 text-orange-500" />
                         <div className="ml-4">
-                            <p className="text-2xl font-bold text-gray-900">89</p>
-                            <p className="text-gray-600">Food Items</p>
+                            <p className="text-2xl font-bold">{foods.length}</p>
+                            <p>Food Items</p>
                         </div>
                     </div>
                 </Card>
+
                 <Card>
                     <div className="flex items-center">
                         <DollarSign className="h-8 w-8 text-blue-500" />
                         <div className="ml-4">
-                            <p className="text-2xl font-bold text-gray-900">₹45,230</p>
-                            <p className="text-gray-600">Fund Donations</p>
+                            <p className="text-2xl font-bold">
+                                ₹{funds.reduce((sum, f) => sum + f.amount, 0)}
+                            </p>
+                            <p>Total Funds</p>
                         </div>
                     </div>
                 </Card>
+
                 <Card>
                     <div className="flex items-center">
                         <Bell className="h-8 w-8 text-purple-500" />
                         <div className="ml-4">
-                            <p className="text-2xl font-bold text-gray-900">12</p>
-                            <p className="text-gray-600">Pending Approvals</p>
-                        </div>
-                    </div>
-                </Card>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card>
-                    <h3 className="text-lg font-semibold mb-4">Recent Activity</h3>
-                    <div className="space-y-3">
-                        {[
-                            { action: 'New user registration', user: 'John Doe', time: '2 hours ago' },
-                            { action: 'Food donation added', user: 'Green Grocers', time: '3 hours ago' },
-                            { action: 'Fund donation received', user: 'Anonymous', time: '5 hours ago' },
-                            { action: 'NGO approval request', user: 'Help Foundation', time: '1 day ago' }
-                        ].map((activity, index) => (
-                            <div key={index} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0">
-                                <div>
-                                    <p className="text-sm font-medium text-gray-900">{activity.action}</p>
-                                    <p className="text-xs text-gray-500">{activity.user}</p>
-                                </div>
-                                <p className="text-xs text-gray-500">{activity.time}</p>
-                            </div>
-                        ))}
-                    </div>
-                </Card>
-
-                <Card>
-                    <h3 className="text-lg font-semibold mb-4">System Stats</h3>
-                    <div className="space-y-4">
-                        <div className="flex justify-between items-center">
-                            <span className="text-sm text-gray-600">Active Donors</span>
-                            <span className="font-medium">78</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                            <span className="text-sm text-gray-600">Registered NGOs</span>
-                            <span className="font-medium">34</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                            <span className="text-sm text-gray-600">Completed Orders</span>
-                            <span className="font-medium">245</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                            <span className="text-sm text-gray-600">Platform Usage</span>
-                            <span className="font-medium text-green-600">↑ 15%</span>
+                            <p className="text-2xl font-bold">0</p>
+                            <p>Pending Approvals</p>
                         </div>
                     </div>
                 </Card>
             </div>
         </div>
     );
-const renderUsers = () => (
-  <div className="space-y-4">
-    <div className="flex justify-between items-center">
-      <h3 className="text-lg font-semibold">User Management</h3>
-      <Button onClick={fetchUsers} size="sm">Refresh</Button>
-    </div>
 
-    {loading ? <Loading /> : (
-      <Card>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Access</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {users.map(user => (
-                <tr key={user._id}>
-                  {/* User info */}
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">{user.name}</div>
-                      <div className="text-sm text-gray-500">{user.email}</div>
-                    </div>
-                  </td>
+    const renderUsers = () => (
+        <Card>
+            {loading ? (
+                <Loading />
+            ) : (
+                <div className="overflow-x-auto">
+                    <table className="min-w-full">
+                        <thead>
+                            <tr className="bg-gray-100">
+                                <th className="px-4 py-3 text-left">Name</th>
+                                <th className="px-4 py-3 text-left">Email</th>
+                                <th className="px-4 py-3 text-left">Role</th>
+                                <th className="px-4 py-3 text-left">Access</th>
+                                <th className="px-4 py-3 text-left">Actions</th>
+                            </tr>
+                        </thead>
 
-                  {/* Role */}
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="capitalize text-sm text-gray-900">{user.role}</span>
-                  </td>
+                        <tbody>
+                            {users.map((u) => (
+                                <tr key={u._id} className="border-b">
+                                    {/* NAME */}
+                                    <td className="px-4 py-3 font-medium text-gray-900">
+                                        {u.name}
+                                    </td>
 
-                  {/* Access */}
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        user.access
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
-                      }`}
-                    >
-                      {user.access ? "Granted" : "Revoked"}
-                    </span>
-                  </td>
+                                    {/* EMAIL */}
+                                    <td className="px-4 py-3 text-gray-700">{u.email}</td>
 
-                  {/* Joined date */}
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(user.createdAt).toLocaleDateString()} {/* assumes createdAt exists */}
-                  </td>
+                                    {/* ROLE */}
+                                    <td className="px-4 py-3 capitalize">{u.role}</td>
 
-                  {/* Actions */}
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex space-x-2">
-                      <Button
-                        size="sm"
-                        variant="primary"
-                        onClick={() =>
-                          handleUserAction(
-                            user._id,
-                            user.access ? "revoke" : "grant"
-                          )
-                        }
-                      >
-                        {user.access ? "Revoke Access" : "Grant Access"}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => handleUserAction(user._id, "delete")}
-                      >
-                        Delete
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </Card>
-    )}
-  </div>
-);
+                                    {/* ACCESS BADGE */}
+                                    <td className="px-4 py-3">
+                                        <span
+                                            className={`px-2 py-1 text-xs rounded-full font-semibold ${u.access
+                                                    ? "bg-green-100 text-green-700"
+                                                    : "bg-red-100 text-red-700"
+                                                }`}
+                                        >
+                                            {u.access ? "Granted" : "Revoked"}
+                                        </span>
+                                    </td>
+
+                                    {/* ACTIONS */}
+                                    <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
+                                        <div className="flex space-x-2">
+
+                                            {/* GRANT / REVOKE BUTTON */}
+                                            <Button
+                                                size="sm"
+                                                variant={u.access ? "destructive" : "primary"}
+                                                onClick={() =>
+                                                    handleUserAction(
+                                                        u._id,
+                                                        u.access ? "revoke" : "grant"
+                                                    )
+                                                }
+                                            >
+                                                {u.access ? "Revoke Access" : "Grant Access"}
+                                            </Button>
+
+                                            {/* DELETE BUTTON */}
+                                            <Button
+                                                size="sm"
+                                                variant="destructive"
+                                                onClick={() =>
+                                                    handleUserAction(u._id, "delete")
+                                                }
+                                            >
+                                                Delete
+                                            </Button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
+        </Card>
+    );
 
 
     const renderFoodItems = () => (
-        <div className="space-y-4">
-            <div className="flex justify-between items-center">
-                <h3 className="text-lg font-semibold">Food Items Management</h3>
-                <Button onClick={fetchAllFoods} size="sm">Refresh</Button>
-            </div>
-
-            {loading ? <Loading /> : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {foods.map(food => (
-                        <Card key={food._id} className="hover:shadow-md transition-shadow p-4">
-                            {/* Food Image */}
-                            {food.imageUrl && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {loading ? (
+                <Loading />
+            ) : (
+                foods.map((f) => (
+                    <Card key={f._id} className="p-4 flex flex-col h-full">
+                        <div className="flex-grow">
+                            {f.imageUrl && (
                                 <img
-                                    src={food.imageUrl}
-                                    alt={food.name}
-                                    className="w-full h-32 object-cover rounded mb-3"
+                                    src={f.imageUrl}
+                                    className="w-full h-32 object-cover rounded"
                                 />
                             )}
 
-                            {/* Header with name + status */}
-                            <div className="flex justify-between items-start mb-2">
-                                <h4 className="font-medium text-gray-900">{food.name}</h4>
-                                <span
-                                    className={`px-2 py-1 rounded text-xs ${food.status === 'available'
-                                            ? 'bg-green-100 text-green-800'
-                                            : food.status === 'reserved'
-                                                ? 'bg-yellow-100 text-yellow-800'
-                                                : food.status === 'collected'
-                                                    ? 'bg-blue-100 text-blue-800'
-                                                    : 'bg-gray-100 text-gray-800'
-                                        }`}
-                                >
-                                    {food.status}
-                                </span>
-                            </div>
+                            <h3 className="font-semibold mt-2">{f.name}</h3>
+                            <p className="text-sm text-gray-600">{f.description}</p>
 
-                            {/* Description */}
-                            <p className="text-sm text-gray-600 mb-2">{food.description}</p>
+                            <p className="text-xs mt-2">Type: {f.type}</p>
+                            <p className="text-xs">Qty: {f.quantity}</p>
+                            <p className="text-xs">Price: ₹{f.price}</p>
+                        </div>
 
-                            {/* Metadata */}
-                            <div className="text-xs text-gray-500 space-y-1">
-                                {/* <p>Donor: {food.donor.name}</p> */}
-                                <p>Type: {food.type}</p>
-                                <p>Quantity: {food.quantity}</p>
-                                <p>Price: ₹{food.price}</p>
-                                <p>Expires: {food.expiryDate}</p>
-                            </div>
+                        <div className="mt-3 text-right">
+                            <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => handleDeleteFood(f._id)}
+                            >
+                                Delete
+                            </Button>
+                        </div>
+                    </Card>
 
-                            {/* Delete button */}
-                            <div className="mt-3 flex justify-end">
-                                <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => handleDeleteFood(food._id)}
-                                >
-                                    Delete
-                                </Button>
-                            </div>
-                        </Card>
-                    ))}
-
-
-                </div>
+                ))
             )}
         </div>
     );
 
     const renderFundDonations = () => (
-        <div className="space-y-4">
-            <div className="flex justify-between items-center">
-                <h3 className="text-lg font-semibold">Fund Donations</h3>
-                <Button onClick={fetchFundDonations} size="sm">Refresh</Button>
-            </div>
+        <Card>
+            {loading ? (
+                <Loading />
+            ) : (
+                <div className="overflow-x-auto">
+                    <table className="min-w-full">
+                        <thead className="bg-gray-100">
+                            <tr>
+                                <th className="px-4 py-3">Donor</th>
+                                <th className="px-4 py-3">Amount</th>
+                                <th className="px-4 py-3">Purpose</th>
+                                <th className="px-4 py-3">Date</th>
+                            </tr>
+                        </thead>
 
-            {loading ? <Loading /> : (
-                <Card>
-                    <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Donor</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Purpose</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                        <tbody>
+                            {funds.map((f) => (
+                                <tr key={f._id} className="border-b ">
+                                    <td className="px-4 py-3 text-center">{f.donor?.name}</td>
+                                    <td className="px-4 py-3 text-center">₹{f.amount}</td>
+                                    <td className="px-4 py-3 text-center">{f.purpose}</td>
+                                    <td className="px-4 py-3 text-center">
+                                        {new Date(f.createdAt).toLocaleDateString()}
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
-                                {fundDonations.map(donation => (
-                                    <tr key={donation.id}>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm font-medium text-gray-900">{donation.donorName}</div>
-                                            <div className="text-sm text-gray-500">{donation.donorEmail}</div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm font-medium text-gray-900">₹{donation.amount}</div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm text-gray-900">{donation.purpose}</div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${donation.status === 'completed' ? 'bg-green-100 text-green-800' :
-                                                donation.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                                                    'bg-red-100 text-red-800'
-                                                }`}>
-                                                {donation.status}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {donation.donationDate}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </Card>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             )}
-        </div>
+        </Card>
     );
+
+    // -----------------------
+    // LEADERBOARD
+    // -----------------------
+
+    const renderLeaderboard = () => {
+        // Aggregate food counts by donor
+        const foodLeaderboard = foods.reduce((acc, f) => {
+            const donor = f.donor?.name || "Unknown";
+            acc[donor] = (acc[donor] || 0) + 1;
+            return acc;
+        }, {});
+
+        const fundLeaderboard = funds.reduce((acc, f) => {
+            const donor = f.donor?.name || "Unknown";
+            acc[donor] = (acc[donor] || 0) + f.amount;
+            return acc;
+        }, {});
+
+        const foodSorted = Object.entries(foodLeaderboard).sort(
+            (a, b) => b[1] - a[1]
+        );
+
+        const fundSorted = Object.entries(fundLeaderboard).sort(
+            (a, b) => b[1] - a[1]
+        );
+
+        return (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card>
+                    <h2 className="text-lg font-semibold flex items-center">
+                        <Trophy className="mr-2 text-yellow-500" /> Top Food Donors
+                    </h2>
+
+                    <ul className="mt-4 space-y-2">
+                        {foodSorted.map(([name, count]) => (
+                            <li
+                                key={name}
+                                className="flex justify-between border-b pb-2 text-sm"
+                            >
+                                <span>{name}</span>
+                                <span>{count} items</span>
+                            </li>
+                        ))}
+                    </ul>
+                </Card>
+
+                <Card>
+                    <h2 className="text-lg font-semibold flex items-center">
+                        <Trophy className="mr-2 text-blue-500" /> Top Fund Donors
+                    </h2>
+
+                    <ul className="mt-4 space-y-2">
+                        {fundSorted.map(([name, amt]) => (
+                            <li
+                                key={name}
+                                className="flex justify-between border-b pb-2 text-sm"
+                            >
+                                <span>{name}</span>
+                                <span>₹{amt}</span>
+                            </li>
+                        ))}
+                    </ul>
+                </Card>
+            </div>
+        );
+    };
+
+    // -----------------------
+    // FINAL RETURN
+    // -----------------------
 
     return (
         <div className="min-h-screen bg-gray-50">
             <Navbar />
-            <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                <div className="mb-6">
-                    <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
-                </div>
 
-                <div className="mb-6">
-                    <nav className="flex space-x-8">
-                        {[
-                            { id: 'overview', label: 'Overview' },
-                            { id: 'users', label: 'Users' },
-                            { id: 'food-items', label: 'Food Items' },
-                            { id: 'fund-donations', label: 'Fund Donations' }
-                        ].map(tab => (
-                            <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
-                                className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === tab.id
-                                    ? 'border-green-500 text-green-600'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700'
-                                    }`}
-                            >
-                                {tab.label}
-                            </button>
-                        ))}
-                    </nav>
-                </div>
+            <div className="max-w-7xl mx-auto py-6 px-4">
+                <h1 className="text-2xl font-bold mb-6">Admin Dashboard</h1>
 
-                <div>
-                    {activeTab === 'overview' && renderOverview()}
-                    {activeTab === 'users' && renderUsers()}
-                    {activeTab === 'food-items' && renderFoodItems()}
-                    {activeTab === 'fund-donations' && renderFundDonations()}
-                </div>
+                {/* NAV */}
+                <nav className="flex space-x-8 mb-6">
+                    {[
+                        ["overview", "Overview"],
+                        ["users", "Users"],
+                        ["food-items", "Food Items"],
+                        ["fund-donations", "Fund Donations"],
+                        ["leaderboard", "Leaderboard"],
+                    ].map(([id, label]) => (
+                        <button
+                            key={id}
+                            onClick={() => setActiveTab(id)}
+                            className={`py-2 px-1 border-b-2 ${activeTab === id
+                                ? "border-green-500 text-green-600"
+                                : "border-transparent text-gray-500"
+                                }`}
+                        >
+                            {label}
+                        </button>
+                    ))}
+                </nav>
+
+                {/* RENDER */}
+                {activeTab === "overview" && renderOverview()}
+                {activeTab === "users" && renderUsers()}
+                {activeTab === "food-items" && renderFoodItems()}
+                {activeTab === "fund-donations" && renderFundDonations()}
+                {activeTab === "leaderboard" && renderLeaderboard()}
             </div>
         </div>
     );

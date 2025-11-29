@@ -1,21 +1,17 @@
 import Food from "../models/Food.js";
-
+import {generateFoodDetails} from "../utils/gemini.js";
 // @desc    Create new food donation
 // @route   POST /api/foods
 // @access  Donor
 export const createFood = async (req, res) => {
   try {
-    const { name, type, quantity, expiryDate, price, description, imageUrl } = req.body;
-
+    const { name, imageUrl } = req.body;
+    const result = await generateFoodDetails(name);
     const food = await Food.create({
       name,
-      type,
-      quantity,
-      expiryDate,
-      price,
-      description,
       imageUrl,
-      donor: req.user._id, // link to logged-in donor
+      donor: req.user._id,
+      ...result,
     });
 
     res.status(201).json(food);
@@ -31,6 +27,15 @@ export const getFoods = async (req, res) => {
   try {
     const foods = await Food.find().populate("donor", "name email role");
     
+    res.json(foods);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+export const getMyFoods = async (req, res) => {
+  try {
+    const foods = await Food.find({ donor: req.user._id }).sort({ createdAt: -1 });
+
     res.json(foods);
   } catch (error) {
     res.status(500).json({ message: error.message });
