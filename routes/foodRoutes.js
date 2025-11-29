@@ -9,11 +9,16 @@ import {
 } from "../controllers/foodController.js";
 
 import { protect, authorize } from "../middleware/authMiddleware.js";
+import { upload } from "../middleware/upload.js";
+
+
+
 
 const router = express.Router();
 
+
 // Donor adds food
-router.post("/", protect, authorize("donor"), createFood);
+router.post("/", protect, authorize("donor"), upload.single("image"), createFood);
 router.get("/my-foods", protect, authorize("donor"), getMyFoods);
 
 // Anyone can view list

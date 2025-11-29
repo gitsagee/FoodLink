@@ -31,7 +31,7 @@ export const DonorDashboard = () => {
     expiryDate: "",
     price: "",
     description: "",
-    imageUrl: "",
+    image: null,
   });
 
   const foodTypes = [
@@ -135,7 +135,12 @@ export const DonorDashboard = () => {
   // ADD FOOD
   // -----------------------------------------
   const handleFoodChange = (e) => {
-    setFoodForm({ ...foodForm, [e.target.name]: e.target.value });
+    const { name, value, files } = e.target;
+    if (name === "image") {
+      setFoodForm({ ...foodForm, image: files[0] });
+    } else {
+      setFoodForm({ ...foodForm, [name]: value });
+    }
   };
 
   const handleAddFood = async (e) => {
@@ -147,13 +152,16 @@ export const DonorDashboard = () => {
     }
 
     try {
+      const formData = new FormData();
+      formData.append("name", foodForm.name);
+      formData.append("image", foodForm.image); // File, not string
+
       const response = await fetch(`${API_URL}/foods`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(foodForm),
+        body: formData, // No JSON.stringify & no content-type header
       });
 
       const data = await response.json();
@@ -162,12 +170,7 @@ export const DonorDashboard = () => {
         showToast("Food donation added!", "success");
         setFoodForm({
           name: "",
-          type: "fruits",
-          quantity: "",
-          expiryDate: "",
-          price: "",
-          description: "",
-          imageUrl: "",
+          image: null,
         });
       } else {
         showToast(data.message || "Failed to add food donation", "error");
@@ -176,6 +179,7 @@ export const DonorDashboard = () => {
       showToast("Network error", "error");
     }
   };
+
 
   // -----------------------------------------
   // TABS UI
@@ -220,11 +224,22 @@ export const DonorDashboard = () => {
       <form onSubmit={handleAddFood} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input name="name" label="Food Name" value={foodForm.name} onChange={handleFoodChange} required />
-         
+
         </div>
 
-        
-        <Input name="imageUrl" label="Image URL" value={foodForm.imageUrl} onChange={handleFoodChange} />
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Image</label>
+          <input
+            type="file"
+            name="image"
+            accept="image/*"
+            onChange={handleFoodChange}
+            className="border p-2 rounded w-full"
+            required
+          />
+        </div>
+
 
         <Button type="submit" variant="secondary">
           <Plus size={16} className="mr-2" /> Add Food Donation
@@ -232,8 +247,8 @@ export const DonorDashboard = () => {
       </form>
     </Card>
   );
-  
-    
+
+
   const renderMyDonations = () => (
     <div>
       <div className="flex justify-between items-center mb-4">
@@ -247,17 +262,17 @@ export const DonorDashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {foods.map((food) => (
             <Card key={food._id} className="p-4 flex flex-col h-full">
-                          <div className="flex-grow">
-                              {food.imageUrl && (
-                                  <img
-                                      src={food.imageUrl}
-                                      className="w-full h-32 object-cover rounded"
-                                  />
-                              )}
-              <h4 className="font-semibold text-gray-900">{food.name}</h4>
-              <p className="text-gray-600 text-sm">{food.description}</p>
-              <div className="text-sm mt-2 text-gray-500">
-              </div>
+              <div className="flex-grow">
+                {food.imageUrl && (
+                  <img
+                    src={food.imageUrl}
+                    className="w-full h-32 object-cover rounded"
+                  />
+                )}
+                <h4 className="font-semibold text-gray-900">{food.name}</h4>
+                <p className="text-gray-600 text-sm">{food.description}</p>
+                <div className="text-sm mt-2 text-gray-500">
+                </div>
                 <p>Type: {food.type}</p>
                 <p>Quantity: {food.quantity} kg</p>
                 <p>Price: ₹{food.price}</p>
@@ -361,11 +376,10 @@ export const DonorDashboard = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === tab.id
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === tab.id
                   ? "border-green-500 text-green-600"
                   : "border-transparent text-gray-500 hover:text-gray-700"
-              }`}
+                }`}
             >
               {tab.label}
             </button>

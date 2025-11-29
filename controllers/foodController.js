@@ -5,7 +5,8 @@ import {generateFoodDetails} from "../utils/gemini.js";
 // @access  Donor
 export const createFood = async (req, res) => {
   try {
-    const { name, imageUrl } = req.body;
+    const { name} = req.body;
+    const imageUrl = req.file?.path; 
     const result = await generateFoodDetails(name);
     const food = await Food.create({
       name,
